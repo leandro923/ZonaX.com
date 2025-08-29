@@ -32,13 +32,11 @@
             </a>
 
             <!-- MercadoPago -->
-            <a href="https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=TU_PREF_ID" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md text-center font-semibold flex items-center justify-center space-x-2">
+            <a href="https://link.mercadopago.com.ar/leandroop" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md text-center font-semibold flex items-center justify-center space-x-2">
                 <i class="fas fa-credit-card text-lg"></i>
-                <span>Pagar con MercadoPago</span>
-
-                
-                
+                <span>Pagar con MercadoPago</span> 
             </a>
+
 
             <!-- Botón de Transferencia -->
 <button id="transfer-btn" class="bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-md font-semibold flex items-center justify-center space-x-2">
@@ -62,6 +60,13 @@
 </div>
 
 <script>
+
+    <dependency>
+   <groupId>com.mercadopago</groupId>
+   <artifactId>sdk-java</artifactId>
+   <version>2.1.7</version>
+</dependency>
+
     const transferBtn = document.getElementById('transfer-btn');
     const transferModal = document.getElementById('transfer-modal');
     const closeModal = document.getElementById('close-modal');

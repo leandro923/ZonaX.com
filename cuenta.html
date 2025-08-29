@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cuenta · Iniciar sesión / Crear cuenta</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --card:#111827;        /* gray-900 */
+      --muted:#6b7280;       /* gray-500 */
+      --text:#e5e7eb;        /* gray-200 */
+      --brand:#3b82f6;       /* blue-500 */
+      --brand-600:#2563eb;   /* blue-600 */
+      --danger:#ef4444;      /* red-500 */
+      --ok:#22c55e;          /* green-500 */
+      --ring: 0 0 0 3px rgba(59,130,246,.35);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial,sans-serif;background:linear-gradient(120deg,#0b1225,#0f172a 35%,#111827);color:var(--text);min-height:100dvh;display:grid;place-items:center;padding:24px}
+
+    .wrap{width:100%;max-width:980px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+    @media (max-width: 860px){.wrap{grid-template-columns:1fr}}
+
+    .brand{background:radial-gradient(1200px 500px at -10% -10%, rgba(59,130,246,.2), transparent 55%),
+            radial-gradient(900px 400px at 120% 120%, rgba(34,197,94,.15), transparent 50%),
+            linear-gradient(180deg,#0b1225,#0f172a);
+      border:1px solid rgba(255,255,255,.06); border-radius:20px; padding:28px; position:relative; overflow:hidden}
+    .brand h1{margin:0 0 12px;font-size:28px;letter-spacing:.3px}
+    .brand p{margin:0;color:var(--muted)}
+
+    .card{background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+
+    .tabs{display:flex; gap:8px; background:#0b1225; padding:6px; border-radius:12px; border:1px solid rgba(255,255,255,.06)}
+    .tab-btn{flex:1; background:transparent; border:0; color:var(--muted); padding:12px 14px; border-radius:10px; cursor:pointer; font-weight:600}
+    .tab-btn[aria-selected="true"]{background:var(--brand); color:white}
+
+    .panel{display:none; margin-top:18px}
+    .panel.active{display:block}
+
+    .row{display:flex; gap:12px}
+    .input{width:100%; background:#0b1225; border:1px solid rgba(255,255,255,.08); color:var(--text); padding:12px 14px; border-radius:12px; outline:none}
+    .input:focus{box-shadow:var(--ring); border-color:var(--brand)}
+    .hint{font-size:12px; color:var(--muted); margin-top:6px}
+
+    .actions{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:14px 0}
+    .checkbox{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted)}
+
+    .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700}
+    .btn-primary{background:var(--brand); color:white}
+    .btn-primary:hover{background:var(--brand-600)}
+    .btn-ghost{background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.12)}
+
+    .or{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; color:var(--muted); font-size:12px; margin:12px 0}
+    .or::before,.or::after{content:""; height:1px; background:rgba(255,255,255,.1)}
+
+    .link{color:#93c5fd; text-decoration:none}
+    .link:hover{text-decoration:underline}
+
+    .err{color:var(--danger); font-size:13px; margin-top:8px; display:none}
+    .ok{color:var(--ok); font-size:13px; margin-top:8px; display:none}
+
+    /* Simple modal that you can open from tu navbar */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); padding:20px; backdrop-filter:saturate(120%) blur(4px); z-index:50}
+    .modal.open{display:grid}
+    .modal .card{width:100%; max-width:520px}
+
+    /* Small avatar circle in brand */
+    .blob{position:absolute; right:-60px; bottom:-60px; width:220px; height:220px; background:conic-gradient(from 90deg, rgba(59,130,246,.25), rgba(34,197,94,.25), rgba(236,72,153,.2)); filter:blur(20px); opacity:.4; border-radius:50%}
+  </style>
+</head>
+<body>
+
+  <!-- Optional: Trigger buttons to demo the modal opening -->
+  <div style="position:fixed; top:14px; right:14px; display:flex; gap:8px; z-index:60">
+    <button class="btn btn-ghost" onclick="openAuth('login')">Iniciar sesión</button>
+    <button class="btn btn-primary" onclick="openAuth('register')">Crear cuenta</button>
+  </div>
+
+  <!-- Page layout -->
+  <div class="wrap">
+    <section class="brand">
+      <h1>Bienvenido a tu cuenta</h1>
+      <p>Accedé para seguir tu compra, guardar favoritos y más. Si todavía no tenés cuenta, creala en segundos.</p>
+      <div class="blob" aria-hidden="true"></div>
+    </section>
+
+    <section class="card" aria-label="Autenticación">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn" role="tab" id="tab-login" aria-controls="panel-login" aria-selected="true">Iniciar sesión</button>
+        <button class="tab-btn" role="tab" id="tab-register" aria-controls="panel-register" aria-selected="false">Crear cuenta</button>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="panel-login" class="panel active" role="tabpanel" aria-labelledby="tab-login" novalidate>
+        <label>
+          <span>Email</span>
+          <input class="input" type="email" name="email" placeholder="tu@email.com" required />
+        </label>
+        <div class="row" style="margin-top:12px">
+          <label style="flex:1">
+            <span>Contraseña</span>
+            <div style="position:relative">
+              <input class="input" type="password" name="password" placeholder="••••••••" minlength="6" required />
+              <button type="button" class="btn btn-ghost" style="position:absolute; right:6px; top:6px; width:auto; padding:8px 10px" onclick="togglePass(this)">Mostrar</button>
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <label class="checkbox">
+            <input type="checkbox" name="remember" />
+            <span>Recordarme</span>
+          </label>
+          <a class="link" href="#" id="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="btn btn-primary" type="submit">Entrar</button>
+        <div class="or">o</div>
+        <button class="btn btn-ghost" type="button" onclick="oauth('google')">Continuar con Google</button>
+        <p id="login-msg" class="err">Revisá los datos e intentá de nuevo.</p>
+      </form>
+
+      <!-- REGISTER -->
+      <form id="panel-register" class="panel" role="tabpanel" aria-labelledby="tab-register" novalidate>
+        <div class="row">
+          <label style="flex:1">
+            <span>Nombre</span>
+            <input class="input" type="text" name="name" placeholder="Tu nombre" minlength="2" required />
+          </label>
+          <label style="flex:1">
+            <span>Apellido</span>
+            <input class="input" type="text" name="lastname" placeholder="Tu apellido" minlength="2" required />
+          </label>
+        </div>
+        <label style="margin-top:12px">
+          <span>Email</span>
+          <input class="input" type="email" name="email" placeholder="tu@email.com" required />
+        </label>
+        <div class="row" style="margin-top:12px">
+          <label style="flex:1">
+            <span>Contraseña</span>
+            <div style="position:relative">
+              <input class="input" type="password" name="password" placeholder="Mínimo 6 caracteres" minlength="6" required />
+              <button type="button" class="btn btn-ghost" style="position:absolute; right:6px; top:6px; width:auto; padding:8px 10px" onclick="togglePass(this)">Mostrar</button>
+            </div>
+          </label>
+          <label style="flex:1">
+            <span>Repetir contraseña</span>
+            <div style="position:relative">
+              <input class="input" type="password" name="confirm" placeholder="Repetir" minlength="6" required />
+              <button type="button" class="btn btn-ghost" style="position:absolute; right:6px; top:6px; width:auto; padding:8px 10px" onclick="togglePass(this)">Mostrar</button>
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <label class="checkbox">
+            <input type="checkbox" name="terms" required />
+            <span>Acepto los <a class="link" href="#">Términos</a> y la <a class="link" href="#">Política</a></span>
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit">Crear cuenta</button>
+        <p id="register-msg" class="err">Revisá los campos marcados.</p>
+        <p id="register-ok" class="ok">¡Cuenta creada! (demo)</p>
+      </form>
+    </section>
+  </div>
+
+  <!-- OPTIONAL MODAL to mount on any page -->
+  <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn" role="tab" id="modal-tab-login" aria-controls="modal-panel-login" aria-selected="true">Iniciar sesión</button>
+        <button class="tab-btn" role="tab" id="modal-tab-register" aria-controls="modal-panel-register" aria-selected="false">Crear cuenta</button>
+      </div>
+      <form id="modal-panel-login" class="panel active" role="tabpanel" aria-labelledby="modal-tab-login">
+        <label>
+          <span>Email</span>
+          <input class="input" type="email" name="email" placeholder="tu@email.com" required />
+        </label>
+        <label style="margin-top:12px">
+          <span>Contraseña</span>
+          <div style="position:relative">
+            <input class="input" type="password" name="password" placeholder="••••••••" minlength="6" required />
+            <button type="button" class="btn btn-ghost" style="position:absolute; right:6px; top:6px; width:auto; padding:8px 10px" onclick="togglePass(this)">Mostrar</button>
+          </div>
+        </label>
+        <div class="actions">
+          <span></span>
+          <button class="btn btn-primary" type="submit">Entrar</button>
+        </div>
+      </form>
+      <form id="modal-panel-register" class="panel" role="tabpanel" aria-labelledby="modal-tab-register">
+        <label>
+          <span>Email</span>
+          <input class="input" type="email" name="email" required />
+        </label>
+        <label style="margin-top:12px">
+          <span>Contraseña</span>
+          <div style="position:relative">
+            <input class="input" type="password" name="password" minlength="6" required />
+            <button type="button" class="btn btn-ghost" style="position:absolute; right:6px; top:6px; width:auto; padding:8px 10px" onclick="togglePass(this)">Mostrar</button>
+          </div>
+        </label>
+        <div class="actions">
+          <span></span>
+          <button class="btn btn-primary" type="submit">Crear cuenta</button>
+        </div>
+      </form>
+      <div style="text-align:right; margin-top:4px">
+        <button class="btn btn-ghost" onclick="closeAuth()" style="width:auto">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Tabs (usable for both page and modal) =====
+    function setupTabs(scope){
+      const root = scope || document;
+      const tabs = root.querySelectorAll('.tabs');
+      tabs.forEach(group=>{
+        const buttons = group.querySelectorAll('[role="tab"]');
+        buttons.forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            // update selected state
+            buttons.forEach(b=>b.setAttribute('aria-selected', String(b===btn)));
+            // show/hide panels
+            const container = group.parentElement;
+            const allPanels = container.querySelectorAll('.panel');
+            allPanels.forEach(p=>p.classList.remove('active'));
+            const panelId = btn.getAttribute('aria-controls');
+            const panel = container.querySelector('#'+panelId);
+            if(panel) panel.classList.add('active');
+          })
+        })
+      })
+    }
+    setupTabs();
+
+    // ===== Password visibility =====
+    function togglePass(el){
+      const input = el.parentElement.querySelector('input');
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      el.textContent = isPwd ? 'Ocultar' : 'Mostrar';
+    }
+
+    // ===== Demo handlers (reemplazá con tu backend/Firebase) =====
+    document.querySelector('#panel-login').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const email = String(fd.get('email')||'');
+      const pass  = String(fd.get('password')||'');
+      const msg = document.querySelector('#login-msg');
+      msg.style.display = 'none';
+      if(!email.includes('@') || pass.length<6){
+        msg.textContent = 'Revisá los datos e intentá de nuevo.';
+        msg.style.display = 'block';
+        return;
+      }
+      // Aquí enviarías fetch('/api/login', {method:'POST', body: JSON.stringify({email,pass})})
+      alert('Login OK (demo)');
+    });
+
+    document.querySelector('#panel-register').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const f = e.currentTarget;
+      const fd = new FormData(f);
+      const pass = String(fd.get('password')||'');
+      const confirm = String(fd.get('confirm')||'');
+      const terms = f.querySelector('input[name="terms"]').checked;
+      const err = document.querySelector('#register-msg');
+      const ok = document.querySelector('#register-ok');
+      err.style.display = 'none';
+      ok.style.display = 'none';
+      if(pass !== confirm){ err.textContent='Las contraseñas no coinciden.'; err.style.display='block'; return; }
+      if(!terms){ err.textContent='Debés aceptar los Términos.'; err.style.display='block'; return; }
+      // Aquí enviarías un POST a tu API para crear el usuario
+      ok.style.display='block';
+    });
+
+    // ===== Optional: simple modal you can open from tu navbar =====
+    const modal = document.querySelector('#auth-modal');
+    function openAuth(which='login'){
+      modal.classList.add('open');
+      const tab = document.querySelector(`#modal-tab-${which}`);
+      const other = document.querySelector(`#modal-tab-${which==='login'?'register':'login'}`);
+      tab?.click();
+      other?.setAttribute('aria-selected','false');
+    }
+    function closeAuth(){ modal.classList.remove('open'); }
+
+    // Cierra modal con ESC o click afuera
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeAuth(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeAuth(); });
+
+    // ===== Hooks de ejemplo para navbar existente =====
+    // Si ya tenés botones con IDs en tu sitio, podés engancharlos así:
+    // document.getElementById('openLogin')?.addEventListener('click', ()=> openAuth('login'))
+    // document.getElementById('openRegister')?.addEventListener('click', ()=> openAuth('register'))
+
+    // ===== Forgot password / OAuth placeholders =====
+    document.getElementById('forgot-link').addEventListener('click', (e)=>{
+      e.preventDefault();
+      alert('Recuperación de contraseña (demo). Integra tu servicio de email o Firebase Auth.');
+    });
+    function oauth(provider){
+      alert('OAuth '+provider+' (demo). Integra Google/Facebook en tu backend o Firebase.');
+    }
+  </script>
+</body>
+</html>
